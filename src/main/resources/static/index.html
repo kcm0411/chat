@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Room</title>
+    <script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+<div>
+    <h2>Chat Room</h2>
+    <div id="chat-box" style="width: 300px; height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;"></div>
+    <input type="text" id="sender" placeholder="Your name" />
+    <input type="text" id="message" placeholder="Type a message" />
+    <button onclick="sendMessage()">Send</button>
+</div>
+
+<script type="text/javascript">
+    var stompClient = null;
+
+    function connect() {
+        // SockJS와 STOMP를 사용하여 WebSocket 연결 설정
+        var socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+
+            // 서버의 '/topic/public' 경로를 구독
+            stompClient.subscribe('/topic/public', function (messageOutput) {
+                console.log("Message received from server:", messageOutput.body);  // 서버에서 수신한 메시지 로그
+                showMessage(JSON.parse(messageOutput.body).content);
+            });
+        });
+    }
+
+    function sendMessage() {
+        var sender = document.getElementById("sender").value;
+        var messageContent = document.getElementById("message").value;
+
+        if (messageContent && stompClient) {
+            var chatMessage = {
+                sender: sender,
+                content: messageContent,
+                type: 'CHAT'
+            };
+            console.log("Sending message:", chatMessage);  // 메시지 전송 로그 추가
+            stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+            document.getElementById("message").value = '';
+        }
+    }
+
+    function showMessage(message) {
+        console.log("Received message:", message);  // 확인용 로그
+        var chatBox = document.getElementById("chat-box");
+        var messageElement = document.createElement("div");
+        messageElement.textContent = message;
+        chatBox.appendChild(messageElement);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+
+    connect(); // 페이지 로드 시 자동으로 WebSocket에 연결
+</script>
+</body>
+</html>
