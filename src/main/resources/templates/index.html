@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Chat Room</title>
+    <link rel="stylesheet" type="text/css" href="/css/styles.css"> <!-- CSS 파일 연결 -->
     <script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 </head>
@@ -9,13 +10,15 @@
 <div>
     <h2>Chat Room</h2>
     <div id="chat-box" style="width: 300px; height: 400px; overflow-y: scroll; border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;"></div>
-    <input type="text" id="sender" placeholder="Your name" />
     <input type="text" id="message" placeholder="Type a message" />
     <button onclick="sendMessage()">Send</button>
 </div>
 
-<script type="text/javascript">
+<script type="text/javascript" th:inline="javascript">
+    var currentUser = /*[[${username}]]*/ "";  // username 값을 JavaScript 변수에 할당
     var stompClient = null;
+
+    console.log("Current User:", currentUser);
 
     function connect() {
         // SockJS와 STOMP를 사용하여 WebSocket 연결 설정
@@ -28,38 +31,57 @@
             // 서버의 '/topic/public' 경로를 구독
             stompClient.subscribe('/topic/public', function (messageOutput) {
                 console.log("Message received from server:", messageOutput.body);  // 서버에서 수신한 메시지 로그
-                showMessage(JSON.parse(messageOutput.body).content);
+                showMessage(JSON.parse(messageOutput.body));
             });
         });
     }
 
     function sendMessage() {
-        var sender = document.getElementById("sender").value;
         var messageContent = document.getElementById("message").value;
 
         if (messageContent && stompClient) {
             var chatMessage = {
-                sender: sender,
+                sender: currentUser,  // 현재 로그인한 사용자의 이름을 자동으로 전송
                 content: messageContent,
                 type: 'CHAT'
             };
-            console.log("Sending message:", chatMessage);  // 메시지 전송 로그 추가
             stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
             document.getElementById("message").value = '';
         }
     }
 
     function showMessage(message) {
-        console.log("Received message:", message);  // 확인용 로그
         var chatBox = document.getElementById("chat-box");
+        var messageContainer = document.createElement("div");
         var messageElement = document.createElement("div");
-        messageElement.textContent = message;
-        chatBox.appendChild(messageElement);
+
+        // 메시지 내용 설정
+        messageElement.textContent = message.content;
+
+        // 현재 사용자가 보낸 메시지인지 확인하여 위치 설정
+        if (message.sender === currentUser) {
+            messageContainer.classList.add("message-container", "right");
+            messageElement.classList.add("message", "right");
+        } else {
+            messageContainer.classList.add("message-container", "left");
+            messageElement.classList.add("message", "left");
+
+            // 다른 사용자의 이름 표시
+            const senderElement = document.createElement("div");
+            senderElement.textContent = message.sender;
+            senderElement.style.fontSize = "0.8em";
+            senderElement.style.color = "#555";
+            messageContainer.appendChild(senderElement);
+        }
+
+        // 메시지 요소를 컨테이너에 추가하고 채팅 박스에 표시
+        messageContainer.appendChild(messageElement);
+        chatBox.appendChild(messageContainer);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    connect();  // 페이지 로드 시 WebSocket 연결
 
-    connect(); // 페이지 로드 시 자동으로 WebSocket에 연결
 </script>
 </body>
 </html>

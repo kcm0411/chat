@@ -1,0 +1,23 @@
+.message-container {
+    display: flex;
+    margin-bottom: 10px;
+}
+.message-container.right {
+    justify-content: flex-end;
+}
+.message-container.left {
+    justify-content: flex-start;
+}
+.message {
+    max-width: 60%;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 5px;
+    color: white;
+}
+.message.right {
+    background-color: #4caf50; /* 현재 사용자 메시지 */
+}
+.message.left {
+    background-color: #2196f3; /* 다른 사용자 메시지 */
+}
