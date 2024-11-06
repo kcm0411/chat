@@ -40,9 +40,11 @@
         var messageContent = document.getElementById("message").value;
 
         if (messageContent && stompClient) {
+            var currentTime = new Date().toLocaleDateString([], {hour: '2-digit', minute: '2-digit'});
             var chatMessage = {
                 sender: currentUser,  // 현재 로그인한 사용자의 이름을 자동으로 전송
                 content: messageContent,
+                time: currentTime,
                 type: 'CHAT'
             };
             stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
@@ -54,17 +56,21 @@
         var chatBox = document.getElementById("chat-box");
         var messageContainer = document.createElement("div");
         var messageElement = document.createElement("div");
+        var timeElement = document.createElement("div");
 
-        // 메시지 내용 설정
+        // 메시지 내용 설정, 전송 시간
         messageElement.textContent = message.content;
+        timeElement.textContent = message.time || "";
 
         // 현재 사용자가 보낸 메시지인지 확인하여 위치 설정
         if (message.sender === currentUser) {
             messageContainer.classList.add("message-container", "right");
             messageElement.classList.add("message", "right");
+            timeElement.classList.add("time-text-right");
         } else {
             messageContainer.classList.add("message-container", "left");
             messageElement.classList.add("message", "left");
+            timeElement.classList.add("time-text-left");
 
             // 다른 사용자의 이름 표시
             const senderElement = document.createElement("div");
@@ -76,6 +82,7 @@
 
         // 메시지 요소를 컨테이너에 추가하고 채팅 박스에 표시
         messageContainer.appendChild(messageElement);
+        messageContainer.appendChild(timeElement);
         chatBox.appendChild(messageContainer);
         chatBox.scrollTop = chatBox.scrollHeight;
     }

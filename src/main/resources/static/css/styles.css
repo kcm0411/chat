@@ -1,23 +1,41 @@
+/* 메시지 시간 - 오른쪽 정렬 */
+.time-text-right {
+    font-size: 0.7em;
+    color: #888;
+    margin-top: 5px;
+    align-self: flex-end; /* 메시지 오른쪽에 정렬 */
+}
+
+/* 메시지 시간 - 왼쪽 정렬 */
+.time-text-left {
+    font-size: 0.7em;
+    color: #888;
+    margin-top: 5px;
+    align-self: flex-start; /* 메시지 왼쪽에 정렬 */
+}
+
+/* 메시지 박스 스타일 */
 .message-container {
     display: flex;
+    flex-direction: column;
     margin-bottom: 10px;
 }
-.message-container.right {
-    justify-content: flex-end;
-}
-.message-container.left {
-    justify-content: flex-start;
-}
+
 .message {
     max-width: 60%;
-    padding: 10px;
+    padding: 8px 10px;
     border-radius: 5px;
-    margin: 5px;
     color: white;
+    word-wrap: break-word;
+    white-space: pre-wrap;
 }
+
 .message.right {
-    background-color: #4caf50; /* 현재 사용자 메시지 */
+    background-color: #4caf50; /* 현재 사용자 메시지 색상 */
+    align-self: flex-end;
 }
+
 .message.left {
-    background-color: #2196f3; /* 다른 사용자 메시지 */
+    background-color: #2196f3; /* 다른 사용자 메시지 색상 */
+    align-self: flex-start;
 }
