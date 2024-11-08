@@ -1,4 +1,4 @@
-package com.example.chat.config;
+package com.example.chat.security;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,16 +33,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http.csrf((csrf) -> csrf.disable());
+        http.csrf(csrf -> csrf.disable());
 
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/css/**", "/js/**").permitAll() // 공개 리소스 설정
-                        .anyRequest().authenticated()  // 그 외의 모든 요청은 인증 필요
+                        .requestMatchers("/login", "/css/**", "/js/**").permitAll() // 공개 리소스
+                        .requestMatchers("/admin/**").hasRole("ADMIN") // ADMIN 권한만 접근 가능
+                        .requestMatchers("/chat/**").hasAnyRole("USER", "ADMIN") // USER와 ADMIN 권한 모두 접근 가능
+                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
-                        .successHandler(customAuthenticationSuccessHandler())  // 커스텀 성공 핸들러
+                        .successHandler(customAuthenticationSuccessHandler()) // 커스텀 성공 핸들러
                         .permitAll()
                 )
                 .logout(logout -> logout
@@ -50,10 +52,10 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login")
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS)  // 세션을 항상 생성
+                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS) // 세션을 항상 생성
                 )
                 .securityContext(securityContext -> securityContext
-                        .requireExplicitSave(false)  // SecurityContext가 세션에 자동 저장되도록 설정
+                        .requireExplicitSave(false) // SecurityContext 자동 저장
                 );
 
         return http.build();
