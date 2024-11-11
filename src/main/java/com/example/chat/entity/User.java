@@ -1,5 +1,6 @@
 package com.example.chat.entity;
 
+import com.example.chat.dto.UserSignupDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -46,4 +47,19 @@ public class User {
         return password;
     }
 
+    // 회원가입을 위한 정적 팩토리 메서드
+    public static User fromDto(UserSignupDto dto, String encodedPassword) {
+
+        if (dto.getLoginId() == null || dto.getLoginId().isEmpty()) {
+            throw new IllegalArgumentException("로그인 ID는 필수입니다.");
+        }
+
+        User user = new User();
+        user.loginId = dto.getLoginId();
+        user.password = encodedPassword;
+        user.name = dto.getName();
+        user.role = UserRole.ROLE_USER;
+
+        return user;
+    }
 }

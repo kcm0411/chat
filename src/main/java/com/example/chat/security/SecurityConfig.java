@@ -37,13 +37,15 @@ public class SecurityConfig {
 
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/login", "/css/**", "/js/**").permitAll() // 공개 리소스
+                        .requestMatchers("/signup", "/login", "/css/**", "/js/**").permitAll() // 공개 리소스
                         .requestMatchers("/admin/**").hasRole("ADMIN") // ADMIN 권한만 접근 가능
                         .requestMatchers("/chat/**").hasAnyRole("USER", "ADMIN") // USER와 ADMIN 권한 모두 접근 가능
                         .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
+                        .usernameParameter("loginId") // 로그인 폼의 아이디 필드 이름
+                        .passwordParameter("password") // 로그인 폼의 비밀번호 필드 이름
                         .successHandler(customAuthenticationSuccessHandler()) // 커스텀 성공 핸들러
                         .permitAll()
                 )
@@ -82,20 +84,21 @@ public class SecurityConfig {
         };
     }
 
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user1 = User.withDefaultPasswordEncoder()
-                .username("user1")
-                .password("qwe1")
-                .roles("USER")
-                .build();
-
-        UserDetails user2 = User.withDefaultPasswordEncoder()
-                .username("user2")
-                .password("qwe2")
-                .roles("USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(user1, user2);
-    }
+//    인메모리 계정 : 삭제 (회원가입 기능 구현)
+//    @Bean
+//    public UserDetailsService userDetailsService() {
+//        UserDetails user1 = User.withDefaultPasswordEncoder()
+//                .username("user1")
+//                .password("qwe1")
+//                .roles("USER")
+//                .build();
+//
+//        UserDetails user2 = User.withDefaultPasswordEncoder()
+//                .username("user2")
+//                .password("qwe2")
+//                .roles("USER")
+//                .build();
+//
+//        return new InMemoryUserDetailsManager(user1, user2);
+//    }
 }
