@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Room List</title>
+</head>
+<body>
+<h1>Welcome, [[${username}]]!</h1>
+<h2>Available Chat Rooms</h2>
+<ul>
+  <li th:each="room : ${rooms}">
+    <a th:href="@{/chat/{roomId}(roomId=${room.id})}">[[${room.name}]]</a>
+  </li>
+</ul>
+</body>
+</html>
