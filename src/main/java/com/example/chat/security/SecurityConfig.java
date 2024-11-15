@@ -1,30 +1,41 @@
 package com.example.chat.security;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
-import java.io.IOException;
+import java.util.List;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
-    // BCryptPasswordEncoder 빈 생성: 비밀번호 해싱
+    private final JwtTokenProvider tokenProvider;
+    private final UserDetailsService userDetailsService;
+
+    public SecurityConfig(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
+        this.tokenProvider = tokenProvider;
+        this.userDetailsService = userDetailsService;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -32,73 +43,32 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-
-        http.csrf(csrf -> csrf.disable());
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(tokenProvider, userDetailsService);
 
         http
+                .csrf(csrf -> csrf.disable()) // CSRF 비활성화
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 비활성화
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/signup", "/login", "/css/**", "/js/**").permitAll() // 공개 리소스
-                        .requestMatchers("/admin/**").hasRole("ADMIN") // ADMIN 권한만 접근 가능
-                        .requestMatchers("/chat/**").hasAnyRole("USER", "ADMIN") // USER와 ADMIN 권한 모두 접근 가능
-                        .anyRequest().authenticated() // 그 외 모든 요청은 인증 필요
+                        .requestMatchers("/api/auth/**", "/signup", "/login", "/favicon.ico", "/css/**", "/js/**").permitAll() // 인증 없이 접근 가능한 경로 설정
+                        .anyRequest().authenticated() // 그 외의 요청은 인증 필요
                 )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .usernameParameter("loginId") // 로그인 폼의 아이디 필드 이름
-                        .passwordParameter("password") // 로그인 폼의 비밀번호 필드 이름
-                        .successHandler(customAuthenticationSuccessHandler()) // 커스텀 성공 핸들러
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login")
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.ALWAYS) // 세션을 항상 생성
-                )
-                .securityContext(securityContext -> securityContext
-                        .requireExplicitSave(false) // SecurityContext 자동 저장
-                );
+                .addFilterBefore(new CorsFilter(corsConfigurationSource()), UsernamePasswordAuthenticationFilter.class) // CORS 필터 추가
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
 
         return http.build();
     }
 
-    // 커스텀 로그인 성공 핸들러
-    private AuthenticationSuccessHandler customAuthenticationSuccessHandler() {
-        return new AuthenticationSuccessHandler() {
-            @Override
-            public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                                Authentication authentication) throws IOException, ServletException {
-                // 세션에서 저장된 요청 확인
-                SavedRequest savedRequest = new HttpSessionRequestCache().getRequest(request, response);
-                String redirectUrl = (savedRequest != null) ? savedRequest.getRedirectUrl() : null;
+    // CORS 설정 정의
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:8080")); // 허용할 출처 설정
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowCredentials(true); // 자격 증명 허용
 
-                // 저장된 요청이 없는 경우 기본 URL로 설정
-                if (redirectUrl == null || redirectUrl.contains("continue")) {
-                    redirectUrl = "/chat";
-                }
-
-                // 리다이렉트 수행
-                response.sendRedirect(redirectUrl);
-            }
-        };
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // 모든 경로에 CORS 설정 적용
+        return source;
     }
-
-//    인메모리 계정 : 삭제 (회원가입 기능 구현)
-//    @Bean
-//    public UserDetailsService userDetailsService() {
-//        UserDetails user1 = User.withDefaultPasswordEncoder()
-//                .username("user1")
-//                .password("qwe1")
-//                .roles("USER")
-//                .build();
-//
-//        UserDetails user2 = User.withDefaultPasswordEncoder()
-//                .username("user2")
-//                .password("qwe2")
-//                .roles("USER")
-//                .build();
-//
-//        return new InMemoryUserDetailsManager(user1, user2);
-//    }
 }

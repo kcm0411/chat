@@ -1,11 +1,9 @@
 package com.example.chat.controller;
 
 import com.example.chat.dto.UserSignupDto;
-import com.example.chat.entity.User;
 import com.example.chat.repository.UserRepository;
 import com.example.chat.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +28,7 @@ public class UserController {
     public String signupSubmit(@ModelAttribute UserSignupDto userDto, Model model){
 
         // UserDto 정보를 받아와서 아이디 중복 체크
-        if (userRepository.findByLoginId(userDto.getLoginId()).isPresent()) {
+        if (userRepository.findByUsername(userDto.getUsername()).isPresent()) {
             model.addAttribute("errorMessage", "이미 사용중인 아이디입니다.");
             return "signup";
         }

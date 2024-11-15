@@ -1,18 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Login</title>
 </head>
 <body>
 <h2>Login</h2>
-<form method="post" action="/login">
+<form id="loginForm" th:action="@{/api/auth/login}" method="post" onsubmit="login(event)">
   <div>
-    <label>Username: <input type="text" name="loginId" /></label>
+    <label>Username: <input type="text" name="username" /></label>
   </div>
   <div>
     <label>Password: <input type="password" name="password" /></label>
   </div>
   <button type="submit">Login</button>
 </form>
+
+<script>
+  function login(event) {
+    event.preventDefault(); // 폼의 기본 동작을 막음
+
+    const form = document.getElementById('loginForm');
+    const formData = new FormData(form);
+
+    fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: formData.get("username"),
+        password: formData.get("password")
+      })
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error("Login failed");
+              }
+              const token = response.headers.get("Authorization").replace("Bearer ", ""); // 헤더에서 토큰 추출
+              localStorage.setItem("jwtToken", token); // localStorage에 저장
+              return response.json();
+            })
+            .then(data => {
+              // 로그인 성공 후 /chatlist 데이터를 가져옴
+              fetchChatList();
+            })
+            .catch(error => console.error("Error:", error));
+  }
+
+  // /chatlist 데이터를 가져오는 함수
+  function fetchChatList() {
+    const token = localStorage.getItem("jwtToken");
+
+    fetch("/chatlist", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`, // Authorization 헤더에 JWT 토큰 추가
+        "Content-Type": "application/json"
+      }
+    })
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`Failed to fetch chat list: ${response.status} ${response.statusText}`);
+              }
+              return response.json();
+            })
+            .then(data => {
+              console.log("Chat list data:", data);
+
+              if (data.length === 0) {
+                // chatRoom 데이터가 비어있을 경우 알림 표시
+                alert("참여하고 있는 채팅방이 없습니다.");
+                // 필요시 다른 페이지로 리다이렉트
+                window.location.href = "/no-chatrooms"; // 예시: 다른 경로로 리다이렉트
+              } else {
+                // 채팅방이 있는 경우 데이터를 화면에 표시하는 로직 추가
+                const chatListContainer = document.getElementById("chatListContainer");
+                chatListContainer.innerHTML = data.map(chat => `<p>${chat.name}</p>`).join('');
+              }
+            })
+            .catch(error => console.error("Error:", error));
+  }
+
+</script>
+
 </body>
 </html>

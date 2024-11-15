@@ -23,7 +23,7 @@ public class User {
     private Long id; // 고유 ID
 
     @Getter
-    private String loginId;  // 로그인 ID
+    private String username;  // 로그인 ID
     private String password; // 비밀번호
     @Getter
     private String name;     // 사용자 이름
@@ -50,12 +50,12 @@ public class User {
     // 회원가입을 위한 정적 팩토리 메서드
     public static User fromDto(UserSignupDto dto, String encodedPassword) {
 
-        if (dto.getLoginId() == null || dto.getLoginId().isEmpty()) {
+        if (dto.getUsername() == null || dto.getUsername().isEmpty()) {
             throw new IllegalArgumentException("로그인 ID는 필수입니다.");
         }
 
         User user = new User();
-        user.loginId = dto.getLoginId();
+        user.username = dto.getUsername();
         user.password = encodedPassword;
         user.name = dto.getName();
         user.role = UserRole.ROLE_USER;

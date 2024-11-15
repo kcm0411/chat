@@ -9,7 +9,7 @@ import lombok.Setter;
 @Setter
 public class UserSignupDto {
 
-    private String loginId;
+    private String username;
     private String password;
     private String name;
 

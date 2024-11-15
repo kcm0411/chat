@@ -5,6 +5,7 @@ import com.example.chat.security.CustomUserDetails;
 import com.example.chat.service.ChatRoomService;
 import com.example.chat.dto.ChatMessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +36,13 @@ public class ChatController {
 
         return "chatlist"; // 채팅방 리스트 화면으로 이동
     }
+
+    @GetMapping("/chatlist")
+    public ResponseEntity<List<ChatRoom>> getChatList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<ChatRoom> chatList = chatRoomService.getChatRoomForUser(userDetails.getId());
+        return ResponseEntity.ok().body(chatList); // JSON 형식으로 반환
+    }
+
 
     @GetMapping("/chat/{roomId}")
     public String enterChatRoom(@PathVariable Long roomId, @AuthenticationPrincipal CustomUserDetails userDetails, Model model) {

@@ -14,10 +14,10 @@ public class UserRepositoryImpl implements UserRepositoryCustom {
     private EntityManager entityManager;
 
     @Override
-    public Optional<User> findByLoginIdAndName(String loginId, String name) {
-        String jpql = "SELECT u FROM User u WHERE u.loginId = :loginId AND u.name = :name";
+    public Optional<User> findByLoginIdAndName(String username, String name) {
+        String jpql = "SELECT u FROM User u WHERE u.username = :username AND u.name = :name";
         TypedQuery<User> query = entityManager.createQuery(jpql, User.class);
-        query.setParameter("loginId", loginId);
+        query.setParameter("username", username);
         query.setParameter("name", name);
 
         return query.getResultList().stream().findFirst();
