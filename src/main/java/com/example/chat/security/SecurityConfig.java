@@ -23,27 +23,20 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtTokenProvider tokenProvider;
     private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(JwtTokenProvider tokenProvider, UserDetailsService userDetailsService) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter
+                        , JwtTokenProvider tokenProvider
+                        , UserDetailsService userDetailsService) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.tokenProvider = tokenProvider;
         this.userDetailsService = userDetailsService;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(tokenProvider, userDetailsService);
 
         http
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화
@@ -52,10 +45,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/signup", "/login", "/favicon.ico", "/css/**", "/js/**").permitAll() // 인증 없이 접근 가능한 경로 설정
                         .anyRequest().authenticated() // 그 외의 요청은 인증 필요
                 )
-                .addFilterBefore(new CorsFilter(corsConfigurationSource()), UsernamePasswordAuthenticationFilter.class) // CORS 필터 추가
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // new CorsFilter 대신 Spring Security의 CORS 설정 활용
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
 
         return http.build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     // CORS 설정 정의
@@ -70,5 +68,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration); // 모든 경로에 CORS 설정 적용
         return source;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

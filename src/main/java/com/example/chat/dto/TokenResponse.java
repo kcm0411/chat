@@ -2,13 +2,9 @@ package com.example.chat.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 @AllArgsConstructor
 @Getter
-public class LoginResponse {
-
+public class TokenResponse {
     private String accessToken;
-    private String refreshToken;
-
 }
