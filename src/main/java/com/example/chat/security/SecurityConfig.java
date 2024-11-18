@@ -42,7 +42,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // CSRF 비활성화
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 비활성화
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/auth/**", "/signup", "/login", "/favicon.ico", "/css/**", "/js/**").permitAll() // 인증 없이 접근 가능한 경로 설정
+                        .requestMatchers("/", "/login", "/signup", "/api/auth/**", "/favicon.ico", "/css/**", "/js/**", "/error").permitAll() // 인증 없이 접근 가능한 경로 설정
+                        .requestMatchers("/chat").authenticated()
                         .anyRequest().authenticated() // 그 외의 요청은 인증 필요
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // new CorsFilter 대신 Spring Security의 CORS 설정 활용

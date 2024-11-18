@@ -2,6 +2,7 @@ package com.example.chat.service;
 
 import com.example.chat.entity.RefreshToken;
 import com.example.chat.repository.RefreshTokenRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,7 @@ public class RefreshTokenService {
     /**
      * Refresh Token 삭제
      */
+    @Transactional
     public void deleteByUsername(String username) {
         refreshTokenRepository.deleteByUsername(username);
     }

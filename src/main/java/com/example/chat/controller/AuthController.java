@@ -79,7 +79,8 @@ public class AuthController {
         String accessToken = tokenProvider.generateAccessToken(loginRequest.getUsername());
         String refreshToken = tokenProvider.generateRefreshToken(loginRequest.getUsername());
 
-        // 4. 생성된 refreshToken 저장
+        // 4. 기존에 있던 refreshToken 삭제 후 생성된 refreshToken 저장
+        refreshTokenService.deleteByUsername(loginRequest.getUsername());
         RefreshToken savedToken = refreshTokenService.createRefreshToken(loginRequest.getUsername(), refreshToken);
         LOGGER.info("Refresh Token 저장 완료: {}", savedToken);
 

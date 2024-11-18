@@ -1,22 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sign Up</title>
+  <script>
+    async function handleSignup(event) {
+      event.preventDefault(); // 기본 폼 제출 동작 막기
+
+      const formData = {
+        username: document.getElementById("username").value,
+        password: document.getElementById("password").value,
+        name: document.getElementById("name").value
+      };
+
+      try {
+        const response = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const errorMessage = await response.text();
+          document.getElementById("error-message").textContent = errorMessage;
+        } else {
+          alert("Signup successful! Redirecting to login...");
+          window.location.href = "/login";
+        }
+      } catch (error) {
+        console.error("Error during signup:", error);
+        document.getElementById("error-message").textContent = "An unexpected error occurred.";
+      }
+    }
+  </script>
 </head>
 <body>
-<h1>회원가입</h1>
-<form action="/signup" method="post">
+<h2>Sign Up</h2>
+<form onsubmit="handleSignup(event)">
   <label for="username">로그인 ID:</label>
   <input type="text" id="username" name="username" required>
   <br>
+
   <label for="password">비밀번호:</label>
   <input type="password" id="password" name="password" required>
   <br>
+
   <label for="name">이름:</label>
   <input type="text" id="name" name="name" required>
   <br>
+
   <button type="submit">회원가입</button>
-  <p style="color:red;">[[${errorMessage}]]</p>
 </form>
+<p id="error-message" style="color: red;"></p>
 </body>
 </html>
