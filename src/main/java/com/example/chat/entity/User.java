@@ -10,6 +10,8 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class) // @CreatedDate, @LastModifiedDate 사용하기위함
@@ -40,6 +42,10 @@ public class User {
     @LastModifiedDate
     @Getter
     private LocalDateTime updatedAt;
+
+    // 사용자 한명이 여러 방에 들어가 있을 수 있기 때문에 OneToMany
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ChatRoomMember> chatRooms = new HashSet<>();
 
     // Password의 경우, 필요할 때만 접근하는 메서드 제공
     public String retrievePassword() {

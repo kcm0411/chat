@@ -20,11 +20,7 @@ public class ChatRoom {
 
     private String name; // 채팅방 이름
 
-    @ManyToMany
-    private Set<User> members = new HashSet<>(); // User 와 ChatRoom 의 관계는 ManyToMany
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ChatRoomMember> members = new HashSet<>(); // ChatRoom 한개에 입장한 멤버 Many
 
-    // 채팅방 초대기능
-    public void addMember(User user) {
-        members.add(user);
-    }
 }
