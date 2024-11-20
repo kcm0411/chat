@@ -2,6 +2,7 @@ package com.example.chat.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 public class ChatRoomMember {
@@ -12,11 +13,13 @@ public class ChatRoomMember {
 
     @ManyToOne
     @JoinColumn(name = "chat_room_id")
+    @Setter
     private ChatRoom chatRoom;
 
     @ManyToOne
     @JoinColumn(name = "members_id")
     @Getter
+    @Setter
     private User member;
 
     private String customName; // 사용자별 커스텀 채팅방 이름

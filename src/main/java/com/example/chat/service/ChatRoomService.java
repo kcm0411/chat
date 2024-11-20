@@ -64,4 +64,24 @@ public class ChatRoomService {
                 .collect(Collectors.toList());
     }
 
+    // 채팅방 만들기
+    public ChatRoom createChatRoom(String defaultName, List<Long> userIds) {
+
+        ChatRoom chatRoom = new ChatRoom();
+        chatRoom.setName(defaultName);
+
+        for (Long memberId : userIds) {
+
+            User user = userRepository.findById(memberId).orElseThrow();
+
+            ChatRoomMember chatRoomMember = new ChatRoomMember();
+            chatRoomMember.setChatRoom(chatRoom);
+            chatRoomMember.setMember(user);
+
+            chatRoom.getMembers().add(chatRoomMember);
+
+        }
+
+        return chatRoomRepository.save(chatRoom);
+    }
 }
