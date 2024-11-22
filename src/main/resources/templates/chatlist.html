@@ -5,24 +5,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat Rooms</title>
   <script>
-    async function loadPageWithToken() {
+    // 채팅방 리스트 불러오기
+    async function loadChatRooms() {
       try {
-        // /api/chatrooms 엔드포인트를 사용해 데이터를 가져옴
+        // 쿠키를 사용해 인증된 요청을 보냄
         const response = await fetch("/api/chatlist", {
           method: "GET",
         });
 
         if (response.ok) {
           const chatRooms = await response.json();
-
-          // 채팅방 리스트 동적으로 렌더링
           const chatListContainer = document.getElementById("chat-rooms");
-          chatListContainer.innerHTML = ""; // 기존 내용 제거
+          chatListContainer.innerHTML = ""; // 기존 내용을 제거
 
           chatRooms.forEach((room) => {
             const roomElement = document.createElement("li");
             roomElement.textContent = `방 이름: ${room.name}, 인원: ${room.memberCount}`;
-            roomElement.onclick = () => enterChatRoom(room.id);
+            roomElement.onclick = () => enterChatRoom(room.id); // 클릭 시 채팅방 입장
             chatListContainer.appendChild(roomElement);
           });
         } else if (response.status === 401) {
@@ -37,14 +36,81 @@
       }
     }
 
-
+    // 특정 채팅방으로 이동
     async function enterChatRoom(roomId) {
-      // 특정 채팅방으로 이동
       window.location.href = `/chat/${roomId}`;
     }
 
-    // 페이지 로드 시 실행
-    window.onload = loadPageWithToken;
+    // 초대 가능한 유저 리스트를 가져와 모달에 렌더링
+    async function openCreateRoomModal() {
+      try {
+        // `/api/users/available` 엔드포인트 호출
+        const response = await fetch("/api/users/available", {
+          method: "GET",
+        });
+
+        if (response.ok) {
+          const users = await response.json(); // 컨트롤러에서 반환한 DTO 리스트를 파싱
+
+          // 사용자 리스트를 렌더링할 DOM 가져오기
+          const userList = document.getElementById("user-list");
+
+          // 기존 리스트 초기화
+          userList.innerHTML = "";
+
+          // 각 유저를 리스트 아이템으로 추가
+          users.forEach((user) => {
+            const listItem = document.createElement("li");
+            listItem.innerHTML = `
+            <input type="checkbox" id="user-${user.id}" value="${user.id}">
+            <label for="user-${user.id}">${user.name}</label>
+          `;
+            userList.appendChild(listItem);
+          });
+
+          // 모달 창을 보이도록 설정
+          document.getElementById("createRoomModal").style.display = "block";
+        } else {
+          alert("Failed to load available users.");
+        }
+      } catch (error) {
+        console.error("Error loading available users:", error);
+        alert("An error occurred while loading users.");
+      }
+    }
+
+    // 새로운 채팅방 생성
+    async function createChatRoom() {
+      const selectedUserIds = Array.from(
+              document.querySelectorAll("#user-list input:checked")
+      ).map((checkbox) => checkbox.value);
+
+      if (selectedUserIds.length === 0) {
+        alert("Please select at least one user to create a chat room.");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/chatrooms", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ memberIds: selectedUserIds }),
+        });
+
+        if (response.ok) {
+          alert("Chat room created successfully!");
+          window.location.reload();
+        } else {
+          alert("Failed to create chat room.");
+        }
+      } catch (error) {
+        console.error("Error creating chat room:", error);
+        alert("An error occurred while creating the chat room.");
+      }
+    }
+
+    // 페이지 로드 시 채팅방 목록 로드
+    window.onload = loadChatRooms;
   </script>
 </head>
 <body>
