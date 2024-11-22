@@ -13,7 +13,8 @@ public interface UserRepository extends JpaRepository<User, Long>, UserRepositor
     Optional<User> findByUsername(String username);
 
     // 채팅방 초대 리스트 (전체인원 - 본인 - 이미초대된사람)
-    @Query("SELECT u FROM User u WHERE u.id != :userId AND u NOT IN (SELECT m FROM ChatRoom r JOIN r.members m WHERE r.id = :chatRoomId)")
+    @Query("SELECT u FROM User u WHERE u.id != :userId AND u.id NOT IN " +
+            "(SELECT cm.member.id FROM ChatRoomMember cm WHERE cm.chatRoom.id = :chatRoomId)")
     List<User> findAvailableUsersForChatRoom(@Param("userId") Long userId, @Param("chatRoomId") Long chatRoomId);
 
 }
