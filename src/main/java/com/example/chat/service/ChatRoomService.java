@@ -1,5 +1,6 @@
 package com.example.chat.service;
 
+import com.example.chat.dto.UserInviteDto;
 import com.example.chat.entity.ChatRoom;
 import com.example.chat.entity.ChatRoomMember;
 import com.example.chat.entity.User;
@@ -36,16 +37,17 @@ public class ChatRoomService {
     }
 
     // 초대가능한 멤버 조회 (신설 채팅방 : 본인 빼고 모두 조회)
-    public List<User> getAvailableUsers(Long currentUserId) {
+    public List<UserInviteDto> getAvailableUsers(Long currentUserId) {
 
         List<User> allUsers = userRepository.findAll();
         return allUsers.stream()
                 .filter(user -> !user.getId().equals(currentUserId)) // 본인을 제외
+                .map(user -> new UserInviteDto(user.getId(), user.getName())) // User -> DTO로 매핑
                 .collect(Collectors.toList());
     }
 
     // 초대가능한 멤버 조회 (이미 존재하는 채팅방 : 본인과 이미 초대된 사용자 빼고 모두 조회)
-    public List<User> getAvailableUsers(Long currentUserId, Long chatRoomId) {
+    public List<UserInviteDto> getAvailableUsers(Long currentUserId, Long chatRoomId) {
 
         // 전체 유저 조회
         List<User> allUsers = userRepository.findAll();
@@ -61,6 +63,7 @@ public class ChatRoomService {
         return allUsers.stream()
                 .filter(user -> !user.getId().equals(currentUserId)) // 본인을 제외
                 .filter(user -> !invitedUsers.contains(user)) // 이미 초대된 사용자를 제외
+                .map(user -> new UserInviteDto(user.getId(), user.getName())) // User -> DTO로 매핑
                 .collect(Collectors.toList());
     }
 
