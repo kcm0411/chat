@@ -27,7 +27,6 @@
           const errorMessage = await response.text();
           document.getElementById("error-message").textContent = errorMessage;
         } else {
-          alert("Signup successful! Redirecting to login...");
           window.location.href = "/login";
         }
       } catch (error) {

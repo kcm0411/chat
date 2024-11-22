@@ -5,22 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chat Rooms</title>
   <script>
-    async function loadChatRooms() {
-      const accessToken = sessionStorage.getItem("accessToken"); // 세션 스토리지에서 Access Token 가져오기
-
-      if (!accessToken) {
-        alert("Access Token is missing. Redirecting to login page.");
-        window.location.href = "/login";
-        return;
-      }
-
+    async function loadPageWithToken() {
       try {
-        // 서버에서 채팅방 목록 가져오기
-        const response = await fetch("/chat", {
+        // /api/chatrooms 엔드포인트를 사용해 데이터를 가져옴
+        const response = await fetch("/api/chatlist", {
           method: "GET",
-          headers: {
-            "Authorization": "Bearer " + accessToken,
-          },
         });
 
         if (response.ok) {
@@ -32,7 +21,7 @@
 
           chatRooms.forEach((room) => {
             const roomElement = document.createElement("li");
-            roomElement.textContent = `방 이름: ${room.name}, 인원: ${room.memberCount}, 마지막 메시지: ${room.lastMessage}`;
+            roomElement.textContent = `방 이름: ${room.name}, 인원: ${room.memberCount}`;
             roomElement.onclick = () => enterChatRoom(room.id);
             chatListContainer.appendChild(roomElement);
           });
@@ -40,20 +29,22 @@
           alert("Unauthorized. Redirecting to login.");
           window.location.href = "/login";
         } else {
-          alert("Failed to fetch chat rooms.");
+          alert("Failed to load chat rooms.");
         }
       } catch (error) {
-        console.error("Error fetching chat rooms:", error);
-        alert("An error occurred while fetching chat rooms.");
+        console.error("Error loading chat rooms:", error);
+        alert("An error occurred while loading chat rooms.");
       }
     }
+
 
     async function enterChatRoom(roomId) {
       // 특정 채팅방으로 이동
       window.location.href = `/chat/${roomId}`;
     }
 
-    window.onload = loadChatRooms; // 페이지 로드 시 채팅방 목록 가져오기
+    // 페이지 로드 시 실행
+    window.onload = loadPageWithToken;
   </script>
 </head>
 <body>
@@ -61,6 +52,13 @@
 <ul id="chat-rooms">
   <li>Loading chat rooms...</li>
 </ul>
-<button onclick="window.location.href='/create-room'">Create New Chat Room</button>
+<button onclick="openCreateRoomModal()">Create New Chat Room</button>
+
+<div id="createRoomModal" style="display: none;">
+  <h3>Select Users to Invite</h3>
+  <ul id="user-list"></ul>
+  <button onclick="createChatRoom()">Create Room</button>
+</div>
+
 </body>
 </html>

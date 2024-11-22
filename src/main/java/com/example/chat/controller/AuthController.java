@@ -7,6 +7,8 @@ import com.example.chat.repository.UserRepository;
 import com.example.chat.security.JwtTokenProvider;
 import com.example.chat.service.RefreshTokenService;
 import com.example.chat.service.UserService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +67,7 @@ public class AuthController {
      * @return JWT 토큰
      */
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticateUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> authenticateUser(@RequestBody LoginRequest loginRequest, HttpServletResponse response) {
 
         // 1. AuthenticationManager를 통해 사용자 인증 처리
         Authentication authentication = authenticationManager.authenticate(
@@ -84,7 +86,16 @@ public class AuthController {
         RefreshToken savedToken = refreshTokenService.createRefreshToken(loginRequest.getUsername(), refreshToken);
         LOGGER.info("Refresh Token 저장 완료: {}", savedToken);
 
-        // 5. 응답 바디에 JWT 토큰 포함
+        // 5. Access Token을 HttpOnly 쿠키에 저장
+        Cookie accessTokenCookie = new Cookie("accessToken", accessToken);
+        accessTokenCookie.setHttpOnly(true); // 클라이언트에서 읽을 수 없도록 설정
+        accessTokenCookie.setSecure(true);  // HTTPS 환경에서만 전송 (개발 환경에서는 false로 설정 가능)
+        accessTokenCookie.setPath("/");    // 모든 경로에서 쿠키 전송
+        accessTokenCookie.setMaxAge(60 * 60 * 24); // 24시간 유효
+
+        response.addCookie(accessTokenCookie);
+
+        // 6 . 응답 바디에 JWT 토큰 포함
         return ResponseEntity.ok(new LoginResponse(accessToken, refreshToken));
 
     }

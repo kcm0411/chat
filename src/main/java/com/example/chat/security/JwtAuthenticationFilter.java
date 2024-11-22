@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 
@@ -43,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             // 1. 요청에서 JWT 토큰을 추출
-            String token = getTokenFromRequest(request);
+            String token = getAccessTokenFromCookies(request.getCookies());
 
             // 2. 토큰의 유효성을 검사하고, 유효한 경우 사용자 정보를 SecurityContext에 설정
             if (token != null && tokenProvider.validateToken(token)) {
@@ -86,4 +87,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         return null;
     }
+
+    /**
+     * 쿠키에서 Access Token 추출
+     * @param cookies
+     * @return null
+     */
+    private String getAccessTokenFromCookies(Cookie[] cookies) {
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    logger.info("Access token found in cookies: " + cookie.getValue());
+                    return cookie.getValue();
+                }
+            }
+        }
+        logger.warn("No access token found in cookies");
+        return null;
+    }
+
+
 }

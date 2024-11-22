@@ -6,7 +6,7 @@
   <title>Login</title>
   <script>
     async function handleLogin(event) {
-      event.preventDefault(); // 기본 동작 방지
+      event.preventDefault();
 
       const username = document.getElementById("username").value;
       const password = document.getElementById("password").value;
@@ -20,38 +20,13 @@
       });
 
       if (response.ok) {
-        const data = await response.json();
-
-        // 세션 스토리지에 Access Token 저장
-        sessionStorage.setItem("accessToken", data.accessToken);
-
-        // `/chat` API 호출
-        const chatResponse = await fetch("/chat", {
-          method: "GET",
-          headers: {
-            "Authorization": "Bearer " + data.accessToken,
-          },
-        });
-
-        if (chatResponse.ok) {
-
-          // 원래 이렇게 되어있었는데, 이러면 인증정보(Authorization)을 넘겨줄 수 없고 단순히 /chat 컨트롤러 호출하여 페이지만 이동하기 때문에 AccessToken을 받지 못하여 시큐리티 인증 불가능
-          // // 세션 스토리지에 Access Token 저장
-          // sessionStorage.setItem("accessToken", data.accessToken);
-          // console.log("Access Token:", sessionStorage.getItem("accessToken"));
-          //
-          // // 채팅방 리스트로 이동
-          // window.location.href = "/chat";
-
-          const chatHtml = await chatResponse.text();
-          document.body.innerHTML = chatHtml; // 서버에서 반환된 HTML 렌더링
-        } else {
-          alert("Failed to load chat page.");
-        }
+        window.location.href = "/chat"; // /chat 페이지로 이동
+      } else {
+        alert("Login failed. Please check your credentials.");
       }
     }
-
   </script>
+
 </head>
 <body>
 <h2>Login</h2>
