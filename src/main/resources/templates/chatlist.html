@@ -9,7 +9,7 @@
     async function loadChatRooms() {
       try {
         // 쿠키를 사용해 인증된 요청을 보냄
-        const response = await fetch("/api/chatlist", {
+        const response = await fetch("/api/chatrooms", {
           method: "GET",
         });
 
@@ -45,7 +45,7 @@
     async function openCreateRoomModal() {
       try {
         // `/api/users/available` 엔드포인트 호출
-        const response = await fetch("/api/users/available", {
+        const response = await fetch("/api/chatrooms/users/available", {
           method: "GET",
         });
 
@@ -62,9 +62,9 @@
           users.forEach((user) => {
             const listItem = document.createElement("li");
             listItem.innerHTML = `
-            <input type="checkbox" id="user-${user.id}" value="${user.id}">
-            <label for="user-${user.id}">${user.name}</label>
-          `;
+    <input type="checkbox" id="user-${user.id}" value="${user.id}" data-username="${user.name}">
+    <label for="user-${user.id}">${user.name}</label>
+  `;
             userList.appendChild(listItem);
           });
 
@@ -81,9 +81,14 @@
 
     // 새로운 채팅방 생성
     async function createChatRoom() {
-      const selectedUserIds = Array.from(
-              document.querySelectorAll("#user-list input:checked")
-      ).map((checkbox) => checkbox.value);
+      // 선택된 사용자 ID 가져오기
+      const selectedUserIds = Array.from(document.querySelectorAll("#user-list input:checked")) // 체크된 체크박스만 선택
+              .map(checkbox => {
+                return {
+                  id: checkbox.value, // 체크된 값(ID)
+                  name: checkbox.dataset.username // 데이터 속성으로 이름 추가
+                };
+              });
 
       if (selectedUserIds.length === 0) {
         alert("Please select at least one user to create a chat room.");
@@ -91,15 +96,18 @@
       }
 
       try {
+        // POST 요청으로 데이터 전송
         const response = await fetch("/api/chatrooms", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ memberIds: selectedUserIds }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(selectedUserIds), // 선택된 사용자 리스트만 전송
         });
 
         if (response.ok) {
           alert("Chat room created successfully!");
-          window.location.reload();
+          window.location.reload(); // 새로고침하여 채팅방 리스트 업데이트
         } else {
           alert("Failed to create chat room.");
         }

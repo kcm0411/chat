@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
+  <style>
+    .button-container {
+      display: flex;
+      gap: 10px; /* 버튼 사이 간격 */
+      margin-top: 10px; /* 버튼 상단 간격 */
+    }
+  </style>
   <script>
     async function handleLogin(event) {
       event.preventDefault();
@@ -25,8 +32,11 @@
         alert("Login failed. Please check your credentials.");
       }
     }
-  </script>
 
+    function navigateToSignup() {
+      window.location.href = "/signup"; // /signup 페이지로 이동
+    }
+  </script>
 </head>
 <body>
 <h2>Login</h2>
@@ -37,7 +47,10 @@
   <label for="password">Password:</label>
   <input type="password" id="password" name="password" required>
   <br>
-  <button type="submit">Login</button>
+  <div class="button-container">
+    <button type="submit">Login</button>
+    <button type="button" onclick="navigateToSignup()">Signup</button>
+  </div>
 </form>
 </body>
 </html>
