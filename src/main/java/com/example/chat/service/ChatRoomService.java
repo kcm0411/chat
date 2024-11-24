@@ -6,7 +6,11 @@ import com.example.chat.entity.ChatRoomMember;
 import com.example.chat.entity.User;
 import com.example.chat.repository.ChatRoomRepository;
 import com.example.chat.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -68,23 +72,41 @@ public class ChatRoomService {
     }
 
     // 채팅방 만들기
-    public ChatRoom createChatRoom(String defaultName, List<Long> userIds) {
+    @Transactional
+    public ChatRoom createChatRoom(Long myUserId, List<UserInviteDto> inviteDtoList) {
+
+        // 채팅방 기본 이름 생성
+        String defaultName = inviteDtoList.stream()
+                .map(UserInviteDto::getName)
+                .collect(Collectors.joining(", "));
+
+        // for 문 이전에, 나 자신도 포함시켜서 같이 초대
+        User myUser = userRepository.findById(myUserId).orElseThrow();
+        inviteDtoList.add(new UserInviteDto(myUser.getId(), myUser.getName()));
+
+        // id 값만 리스트로 뽑기
+        List<Long> userIds = inviteDtoList.stream()
+                .map(UserInviteDto::getId)
+                .collect(Collectors.toList());
+
+        // 뽑은 id값으로 유저 객체 조회
+        List<User> userList = userRepository.findAllById(userIds);
 
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.setName(defaultName);
 
-        for (Long memberId : userIds) {
-
-            User user = userRepository.findById(memberId).orElseThrow();
+        for (User user : userList) {
 
             ChatRoomMember chatRoomMember = new ChatRoomMember();
             chatRoomMember.setChatRoom(chatRoom);
             chatRoomMember.setMember(user);
+            chatRoomMember.setCustomName(defaultName);
 
             chatRoom.getMembers().add(chatRoomMember);
 
         }
 
         return chatRoomRepository.save(chatRoom);
+
     }
 }

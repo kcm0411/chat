@@ -1,5 +1,6 @@
 package com.example.chat.entity;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,6 +23,7 @@ public class ChatRoomMember {
     @Setter
     private User member;
 
+    @Setter
     private String customName; // 사용자별 커스텀 채팅방 이름
 
 }

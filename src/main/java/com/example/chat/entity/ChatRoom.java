@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -21,6 +21,6 @@ public class ChatRoom {
     private String name; // 채팅방 이름
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ChatRoomMember> members = new HashSet<>(); // ChatRoom 한개에 입장한 멤버 Many
+    private List<ChatRoomMember> members = new ArrayList<>(); // ChatRoom 한개에 입장한 멤버 Many
 
 }
