@@ -17,6 +17,7 @@ import java.util.Set;
 @EntityListeners(AuditingEntityListener.class) // @CreatedDate, @LastModifiedDate 사용하기위함
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // 기본생성자 protected : 같은패키지 또는 상속구조 내에서만 객체 생성 가능
+@Table(name = "user")
 public class User {
 
     @Getter
