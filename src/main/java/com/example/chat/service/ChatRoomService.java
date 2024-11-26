@@ -6,11 +6,8 @@ import com.example.chat.entity.ChatRoomMember;
 import com.example.chat.entity.User;
 import com.example.chat.repository.ChatRoomRepository;
 import com.example.chat.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -92,6 +89,15 @@ public class ChatRoomService {
         // 뽑은 id값으로 유저 객체 조회
         List<User> userList = userRepository.findAllById(userIds);
 
+        // 1) 개인 채팅방의 경우, 이미 구성되어있는 채팅방이 있다면 채팅방을 새로 만들지 않고 기존에 구성된 채팅방을 반환
+        if (userIds.size() == 2) {
+            Optional<ChatRoom> existingChatRoom = chatRoomRepository.findPrivateChatRoomByUserIds(userIds.get(0), userIds.get(1));
+            if (existingChatRoom.isPresent()) {
+                return existingChatRoom.get(); // 기존 채팅방 반환
+            }
+        }
+
+        // 2) 채팅방 만들기
         ChatRoom chatRoom = new ChatRoom();
         chatRoom.setName(defaultName);
 
