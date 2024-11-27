@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -72,14 +73,15 @@ public class ChatRoomService {
     @Transactional
     public ChatRoom createChatRoom(Long myUserId, List<UserInviteDto> inviteDtoList) {
 
-        // 채팅방 기본 이름 생성
-        String defaultName = inviteDtoList.stream()
-                .map(UserInviteDto::getName)
-                .collect(Collectors.joining(", "));
-
-        // for 문 이전에, 나 자신도 포함시켜서 같이 초대
+        // 나 자신도 포함시켜서 기본이름 생성 및 초대
         User myUser = userRepository.findById(myUserId).orElseThrow();
         inviteDtoList.add(new UserInviteDto(myUser.getId(), myUser.getName()));
+        
+        // 채팅방 기본 이름 생성
+        String defaultName = inviteDtoList.stream()
+                .sorted(Comparator.comparing(UserInviteDto::getName))
+                .map(UserInviteDto::getName)
+                .collect(Collectors.joining(", "));
 
         // id 값만 리스트로 뽑기
         List<Long> userIds = inviteDtoList.stream()
