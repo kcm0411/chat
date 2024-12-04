@@ -1,5 +1,6 @@
 package com.example.chat.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -17,10 +18,11 @@ public class ChatRoomMember {
     @JoinColumn(name = "chat_room_id")
     @Setter
     @Getter
+    @JsonBackReference // ChatRoomMember -> ChatRoom 직렬화 제외
     private ChatRoom chatRoom;
 
     @ManyToOne
-    @JoinColumn(name = "members_id")
+    @JoinColumn(name = "member_id")
     @Getter
     @Setter
     private User member;

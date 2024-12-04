@@ -8,13 +8,19 @@
     // 채팅방 리스트 불러오기
     async function loadChatRooms() {
       try {
-        // 쿠키를 사용해 인증된 요청을 보냄
-        const response = await fetch("/api/chatrooms", {
-          method: "GET",
-        });
+        console.log("Fetching chat rooms from:", "/api/chatrooms");
+        const response = await fetch("/api/chatrooms", { method: "GET" });
 
-        if (response.ok) {
+        if (!response.ok) {
+          console.error(`Failed to fetch chat rooms. Status: ${response.status}`);
+          alert(`Failed to load chat rooms. Status: ${response.status}`);
+          return;
+        }
+
+        try {
           const chatRooms = await response.json();
+          console.log("Chat rooms data:", chatRooms);
+
           const chatListContainer = document.getElementById("chat-rooms");
           chatListContainer.innerHTML = ""; // 기존 내용을 제거
 
@@ -24,17 +30,16 @@
             roomElement.onclick = () => enterChatRoom(room.id); // 클릭 시 채팅방 입장
             chatListContainer.appendChild(roomElement);
           });
-        } else if (response.status === 401) {
-          alert("Unauthorized. Redirecting to login.");
-          window.location.href = "/login";
-        } else {
-          alert("Failed to load chat rooms.");
+        } catch (jsonError) {
+          console.error("Error parsing JSON response:", jsonError);
+          alert("An error occurred while parsing chat rooms data.");
         }
       } catch (error) {
         console.error("Error loading chat rooms:", error);
         alert("An error occurred while loading chat rooms.");
       }
     }
+
 
     // 특정 채팅방으로 이동
     async function enterChatRoom(roomId) {

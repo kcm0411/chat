@@ -1,5 +1,6 @@
 package com.example.chat.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ public class ChatRoom {
 
     private String name; // 채팅방 이름
 
+    @JsonManagedReference // ChatRoom -> ChatRoomMember 직렬화 허용
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatRoomMember> members = new ArrayList<>(); // ChatRoom 한개에 입장한 멤버 Many
 

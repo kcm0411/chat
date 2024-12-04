@@ -30,7 +30,7 @@ public class ChatRoomService {
     // 접근권한 있는 채팅방 리스트 조회
     public List<ChatRoom> getChatRoomForUser(Long userId){
 
-        List<ChatRoomMember> chatRoomMemberList = chatRoomMemberRepository.findAllByMembers_Id(userId);
+        List<ChatRoomMember> chatRoomMemberList = chatRoomMemberRepository.findAllByMember_Id(userId);
 
         List<ChatRoom> chatRoomList = chatRoomMemberList.stream()
                 .map(ChatRoomMember::getChatRoom) // ChatRoomMember -> ChatRoom 변환
