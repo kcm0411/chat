@@ -4,6 +4,7 @@ import com.example.chat.dto.UserInviteDto;
 import com.example.chat.entity.ChatRoom;
 import com.example.chat.entity.ChatRoomMember;
 import com.example.chat.entity.User;
+import com.example.chat.repository.ChatRoomMemberRepository;
 import com.example.chat.repository.ChatRoomRepository;
 import com.example.chat.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -23,11 +24,20 @@ public class ChatRoomService {
     private ChatRoomRepository chatRoomRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ChatRoomMemberRepository chatRoomMemberRepository;
 
     // 접근권한 있는 채팅방 리스트 조회
     public List<ChatRoom> getChatRoomForUser(Long userId){
 
-        return chatRoomRepository.findAllByMembers_Id(userId);
+        List<ChatRoomMember> chatRoomMemberList = chatRoomMemberRepository.findAllByMembers_Id(userId);
+
+        List<ChatRoom> chatRoomList = chatRoomMemberList.stream()
+                .map(ChatRoomMember::getChatRoom) // ChatRoomMember -> ChatRoom 변환
+                .distinct() // 중복 제거 (같은 ChatRoom에 여러 Member가 있을 수 있음)
+                .collect(Collectors.toList()); // ChatRoom 리스트로 변환
+
+        return chatRoomList;
 
     }
 

@@ -10,9 +10,6 @@ import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 
-    // 각 유저 별 채팅방 조회
-    List<ChatRoom> findAllByMembers_Id(Long userId);
-
     // 개인채팅방 존재유무 체크
     @Query(value = "SELECT DISTINCT cr.* " +
             "FROM chat_room cr " +

@@ -16,6 +16,7 @@ public class ChatRoomMember {
     @ManyToOne
     @JoinColumn(name = "chat_room_id")
     @Setter
+    @Getter
     private ChatRoom chatRoom;
 
     @ManyToOne
