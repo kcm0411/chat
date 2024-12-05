@@ -1,5 +1,6 @@
 package com.example.chat.controller;
 
+import com.example.chat.dto.ChatRoomDto;
 import com.example.chat.dto.UserInviteDto;
 import com.example.chat.entity.ChatRoom;
 import com.example.chat.security.CustomUserDetails;
@@ -11,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class ChatApiController {
@@ -19,10 +21,14 @@ public class ChatApiController {
     private ChatRoomService chatRoomService;
 
     @GetMapping("/api/chatrooms")
-    public ResponseEntity<List<ChatRoom>> getChatList(@AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<List<ChatRoomDto>> getChatList(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
         List<ChatRoom> chatList = chatRoomService.getChatRoomForUser(userDetails.getId());
-        return ResponseEntity.ok().body(chatList); // JSON 형식으로 반환
+        List<ChatRoomDto> chatRoomDtoList = chatList.stream()
+                .map(ChatRoomDto::new)
+                .toList();
+
+        return ResponseEntity.ok().body(chatRoomDtoList); // JSON 형식으로 반환
 
     }
 
