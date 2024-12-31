@@ -54,6 +54,7 @@ public class PageController {
         }
 
         model.addAttribute("username", userDetails.getUsername());
+        model.addAttribute("name", userDetails.getName());
         Optional<ChatRoom> chatRoomOpt = chatRoomService.getChatRoomById(roomId); // 채팅방 객체 조회
         if (chatRoomOpt.isPresent()) {
             model.addAttribute("chatRoom", chatRoomOpt.get()); // .get 을 붙인 이유 : Optional 로 받은 객체이기때문에, 값이 있을때만 받아온다. (isPresent와 이중체크)

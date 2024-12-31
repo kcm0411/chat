@@ -39,3 +39,12 @@
     background-color: #2196f3; /* 다른 사용자 메시지 색상 */
     align-self: flex-start;
 }
+
+#chatArea {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px 0;
+    height: 300px;
+    overflow-y: auto;
+    background-color: #f9f9f9;
+}

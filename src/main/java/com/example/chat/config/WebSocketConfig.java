@@ -28,6 +28,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")  // allowedOrigins 대신 allowedOriginPatterns 사용
-                .withSockJS();
+                .withSockJS(); // WebSocket을 지원하지 않는 브라우저에서도 사용할 수 있도록 SockJS 폴백을 활성화
     }
 }
